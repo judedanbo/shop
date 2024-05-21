@@ -6,14 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-   
+
     public function up(): void
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
-            $table->integer('quantity');
+            $table->unsignedSmallInteger('weight');
             $table->string('origin')->nullable();
             $table->string('source')->nullable();
+            // $table->string('total_cost')->virtualAs('weight * other_names');
+
             $table->foreignId('order_id');
             $table->foreignId('waste_id');
             $table->foreignId('price_id');
@@ -22,7 +24,7 @@ return new class extends Migration
         });
     }
 
-   
+
     public function down(): void
     {
         Schema::dropIfExists('order_items');

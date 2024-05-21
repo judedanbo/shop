@@ -11,7 +11,7 @@ return new class extends Migration
     {
         Schema::create('prices', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('price');
+            $table->decimal('price', 10, 2);
             $table->foreignId('waste_id');
             $table->string('currency', 4)->default('GHS');
             $table->string('unit', 20);

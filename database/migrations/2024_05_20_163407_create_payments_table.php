@@ -6,12 +6,12 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-   
+
     public function up(): void
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->integer('amount');
+            $table->decimal('amount', 10, 2);
             $table->date('date');
             $table->string('payment_method', 100);
             $table->string('phone', 15);
@@ -23,7 +23,7 @@ return new class extends Migration
         });
     }
 
-   
+
     public function down(): void
     {
         Schema::dropIfExists('payments');

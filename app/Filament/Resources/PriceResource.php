@@ -7,6 +7,9 @@ use App\Filament\Resources\PriceResource\RelationManagers;
 use App\Models\Price;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -36,7 +39,9 @@ class PriceResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('price')
-                    ->searchable(),
+                    ->numeric()
+                    ->searchable()
+                    ->alignRight(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -66,6 +71,39 @@ class PriceResource extends Resource
             ]);
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('Waste Information')
+                    // ->columns(2)
+                    ->schema([
+                        TextEntry::make('waste.type')
+                            ->label('Waste Type'),
+                        TextEntry::make('waste.description')
+                            ->label(''),
+                    ]),
+                Section::make('Price Information')
+                    ->columns(3)
+                    ->schema([
+                        TextEntry::make('unit')
+                            ->label('Unit of Sale'),
+                        TextEntry::make('price')
+                            ->money(fn (Price $record) => $record->currency)
+                            ->label('Unit price'),
+                        TextEntry::make('created_at')
+                            ->since(),
+                    ]),
+            ]);
+
+        // ->actions([
+        //     Infolists\Actions\EditAction::make(),
+        //     Infolists\Actions\DeleteAction::make(),
+        //     Infolists\Actions\ForceDeleteAction::make(),
+        //     Infolists\Actions\RestoreAction::make(),
+        // ]);
+    }
+
     public static function getRelations(): array
     {
         return [
@@ -77,7 +115,7 @@ class PriceResource extends Resource
     {
         return [
             'index' => Pages\ListPrices::route('/'),
-            'create' => Pages\CreatePrice::route('/create'),
+            // 'create' => Pages\CreatePrice::route('/create'),
             'view' => Pages\ViewPrice::route('/{record}'),
             // 'edit' => Pages\EditPrice::route('/{record}/edit'),
         ];

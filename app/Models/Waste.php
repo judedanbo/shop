@@ -24,7 +24,7 @@ class Waste extends Model
 
     public function prices(): HasMany
     {
-        return $this->hasMany(Price::class);
+        return $this->hasMany(Price::class)->latest();
     }
 
     public function orderItems(): HasMany

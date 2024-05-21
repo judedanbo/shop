@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\WasteResource\Pages;
 use App\Filament\Resources\WasteResource\RelationManagers;
+use App\Filament\Resources\WasteResource\RelationManagers\PricesRelationManager;
 use App\Models\Waste;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -64,9 +65,7 @@ class WasteResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [PricesRelationManager::class];
     }
 
     public static function getPages(): array
