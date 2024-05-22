@@ -35,9 +35,9 @@ class OrdersRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('id'),
                 Tables\Columns\TextColumn::make('date')
                     ->date(),
-                Tables\Columns\TextColumn::make('order_items_count')
+                Tables\Columns\TextColumn::make('items_count')
                     ->label('Items')
-                    ->counts('orderItems')
+                    ->counts('items')
                     ->numeric()
                     ->alignRight(),
                 Tables\Columns\TextColumn::make('total')

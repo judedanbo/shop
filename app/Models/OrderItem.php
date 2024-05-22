@@ -2,13 +2,20 @@
 
 namespace App\Models;
 
+use Blueprint\Builder;
 use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Livewire\Component as Livewire;
+use NunoMaduro\Collision\Adapters\Phpunit\State;
 
 class OrderItem extends Model
 {
@@ -63,37 +70,66 @@ class OrderItem extends Model
     public static function getForm($orderId = null): array
     {
         return [
-            Select::make('order_id')
-                ->relationship('order', 'id')
-                ->default($orderId)
-                ->native(false)
-                // ->hidden(function () use ($orderId) {
-                //     return $orderId !== null;
-                // })
-                ->hidden(fn () => $orderId === null)
-                ->required(),
-            Select::make('waste_id')
-                ->relationship('waste', 'type')
-                ->createOptionForm(Waste::getForm())
-                ->editOptionForm(Waste::getForm())
-                ->preload()
-                ->searchable()
-                ->live()
-                ->required(),
-            TextInput::make('origin')
-                ->maxLength(255),
-            TextInput::make('source')
-                ->maxLength(255),
-            Group::make()
-                ->columns(2)
+            Section::make('Order Item Information')
+                ->columns([
+                    'lg' => 3,
+                ])
                 ->schema([
-                    TextInput::make('weight')
-                        ->required()
-                        ->numeric(),
-                    Select::make('price_id')
-                        ->relationship('price', 'price')
-                        // ->disabled()
+                    Select::make('order_id')
+                        ->relationship('order', 'id')
+                        ->columnStart(['lg' => 2])
+                        ->hidden(fn (Get $get) => $get('order_id') === null)
+                        ->native(false)
                         ->required(),
+                    Select::make('waste_id')
+                        ->relationship('waste', 'type',  modifyQueryUsing: fn ($query) => $query->whereHas('prices'),)
+                        ->columnSpan(2)
+                        ->createOptionForm(Waste::getForm())
+                        ->editOptionForm(Waste::getForm())
+                        ->preload()
+                        ->searchable()
+                        ->live()
+                        ->afterStateUpdated(function (Set $set, Get $get) {
+                            $set('price', Price::where('waste_id', $get('waste_id'))->latest()->first()->price);
+                            $set('price_id', Price::where('waste_id', $get('waste_id'))->latest()->first()->id);
+                        })
+                        ->required(),
+                    TextInput::make('origin')
+                        ->maxLength(255)
+                        ->columnStart(['lg' => 1])
+                        ->columnSpanFull(),
+                    TextInput::make('source')
+                        ->maxLength(255)
+                        ->columnSpanFull(),
+
+                    TextInput::make('weight')
+                        ->numeric()
+                        ->inputMode('decimal')
+                        ->disabled(fn (Get $get) => !$get('waste_id'))
+                        ->live(onBlur: true)
+                        ->columnStart(['lg' => 1])
+                        ->suffix('pounds')
+                        ->afterStateUpdated(function (Set $set, Get $get) {
+                            // dd($get);
+                            if ($get('weight') && $get('waste_id')) {
+                                $set('total_price', $get('weight') * Price::where('waste_id', $get('waste_id'))->first()->price);
+                            }
+                            // $set('total_price', ($get('weight') * Price::find($get('price_id'))->price) ?? null);
+                        })
+                        ->required(),
+                    TextInput::make('price')
+                        ->numeric()
+                        ->prefix('GHS')
+                        ->inputMode('decimal')
+                        ->disabled(),
+
+                    Hidden::make('price_id'),
+
+                    TextInput::make('total_price')
+                        ->numeric()
+                        ->prefix('GHS')
+                        ->inputMode('decimal')
+                        ->disabled(),
                 ]),
         ];
     }

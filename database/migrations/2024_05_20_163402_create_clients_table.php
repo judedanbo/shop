@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('other_names', 100)->nullable();
             $table->string('last_name', 100);
             $table->string('phone', 15);
-            $table->string('full_name')->virtualAs('concat(first_name, \' \', other_names,\' \' , last_name)');
+            $table->string('full_name')->virtualAs('concat(first_name, \' \' , last_name)');
             $table->timestamps();
             $table->softDeletes();
         });

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\WasteResource\RelationManagers;
 
+use App\Models\Price;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -14,14 +15,15 @@ class PricesRelationManager extends RelationManager
 {
     protected static string $relationship = 'prices';
 
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
+
     public function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\TextInput::make('price')
-                    ->required()
-                    ->maxLength(255),
-            ]);
+            ->schema(Price::getForm());
     }
 
     public function table(Table $table): Table
@@ -30,6 +32,9 @@ class PricesRelationManager extends RelationManager
             ->recordTitleAttribute('price')
             ->columns([
                 Tables\Columns\TextColumn::make('price'),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->since(),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make()
@@ -38,10 +43,10 @@ class PricesRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+                // Tables\Actions\EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
+                // Tables\Actions\ForceDeleteAction::make(),
+                // Tables\Actions\RestoreAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

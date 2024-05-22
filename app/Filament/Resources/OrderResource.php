@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers;
+use App\Filament\Resources\OrderResource\RelationManagers\ItemsRelationManager;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Waste;
@@ -12,7 +13,11 @@ use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
@@ -36,6 +41,9 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('status'),
                 Tables\Columns\TextColumn::make('client.full_name')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('date')
@@ -102,7 +110,7 @@ class OrderResource extends Resource
                     //             )
                     //     ]),
                     Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\EditAction::make()->slideOver(),
                 ])
             ])
             ->bulkActions([
@@ -114,10 +122,31 @@ class OrderResource extends Resource
             ]);
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('Order Information')
+                    ->columns(['xl' => 5])
+                    ->schema([
+                        TextEntry::make('id'),
+                        TextEntry::make('status')
+                            ->badge(),
+                        TextEntry::make('client.full_name'),
+                        TextEntry::make('client.phone'),
+                        TextEntry::make('date')
+                            ->date(),
+                        TextEntry::make('total')
+                            ->money('GHS')
+                            ->weight(FontWeight::Bold),
+                    ]),
+            ]);
+    }
+
     public static function getRelations(): array
     {
         return [
-            //
+            ItemsRelationManager::class
         ];
     }
 
@@ -127,7 +156,7 @@ class OrderResource extends Resource
             'index' => Pages\ListOrders::route('/'),
             // 'create' => Pages\CreateOrder::route('/create'),
             'view' => Pages\ViewOrder::route('/{record}'),
-            'edit' => Pages\EditOrder::route('/{record}/edit'),
+            // 'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
     }
 

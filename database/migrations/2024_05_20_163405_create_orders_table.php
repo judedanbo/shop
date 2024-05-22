@@ -13,6 +13,7 @@ return new class extends Migration
             $table->id();
             $table->date('date')->default(now());
             $table->foreignId('client_id');
+            $table->string('status')->default('pending');
             $table->timestamps();
             $table->softDeletes();
         });

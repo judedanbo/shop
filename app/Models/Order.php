@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatusEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Get;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use NunoMaduro\Collision\Adapters\Phpunit\State;
 
 class Order extends Model
 {
@@ -21,12 +24,14 @@ class Order extends Model
     protected $fillable = [
         'date',
         'client_id',
+        'status',
     ];
 
     protected $casts = [
         'id' => 'integer',
         'date' => 'date',
         'client_id' => 'integer',
+        'status' => OrderStatusEnum::class,
     ];
 
     public function items(): HasMany
@@ -71,7 +76,6 @@ class Order extends Model
                 ->preload()
                 ->searchable()
                 ->native(false)
-                ->live()
                 ->required(),
             Repeater::make('items')
                 ->collapsible()
@@ -79,17 +83,19 @@ class Order extends Model
                 ->columnSpanFull()
                 ->relationship()
                 ->schema(OrderItem::getForm(null))
-                ->itemLabel(fn (array $state): ?string => $state['waste_id'] ?? null),
-            Repeater::make('payment')
-                ->collapsible()
-                ->defaultItems(1)
-                ->columnSpanFull()
-                ->relationship()
-                ->addActionLabel('Pay')
-                ->addable(false)
-                ->deletable(false)
-                ->schema(Payment::getForm(null))
-                ->itemLabel(fn (array $state): ?string => $state['amount'] ?? null),
+                ->itemLabel(function (array $state): ?string {
+                    return Waste::find($state['waste_id'])->type ?? null;
+                }),
+            // Repeater::make('payment')
+            //     ->collapsible()
+            //     ->defaultItems(1)
+            //     ->columnSpanFull()
+            //     ->relationship()
+            //     ->addActionLabel('Pay')
+            //     ->addable(false)
+            //     ->deletable(false)
+            //     ->schema(Payment::getForm(null))
+            //     ->itemLabel(fn (array $state): ?string => $state['amount'] ?? null),
         ];
     }
 }

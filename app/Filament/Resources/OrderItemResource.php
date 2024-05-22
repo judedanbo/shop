@@ -92,7 +92,8 @@ class OrderItemResource extends Resource
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->slideOver(),
                 ]),
             ])
             ->bulkActions([
@@ -115,9 +116,9 @@ class OrderItemResource extends Resource
     {
         return [
             'index' => Pages\ListOrderItems::route('/'),
-            'create' => Pages\CreateOrderItem::route('/create'),
+            // 'create' => Pages\CreateOrderItem::route('/create'),
             'view' => Pages\ViewOrderItem::route('/{record}'),
-            'edit' => Pages\EditOrderItem::route('/{record}/edit'),
+            // 'edit' => Pages\EditOrderItem::route('/{record}/edit'),
         ];
     }
 
