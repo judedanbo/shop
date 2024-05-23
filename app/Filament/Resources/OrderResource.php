@@ -5,11 +5,15 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Filament\Resources\OrderResource\RelationManagers\ItemsRelationManager;
+use App\Filament\Resources\OrderResource\RelationManagers\PaymentsRelationManager;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Price;
 use App\Models\Waste;
 use Filament\Forms;
 use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -24,9 +28,16 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Filament\Support\RawJs;
 
 class OrderResource extends Resource
 {
+    protected $listeners = [
+        'refreshOrders' => '$refresh',
+    ];
+
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -43,7 +54,10 @@ class OrderResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status'),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Order Status')
+                    ->badge()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('client.full_name')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('date')
@@ -53,7 +67,7 @@ class OrderResource extends Resource
                     ->label('Items')
                     ->counts('items')
                     ->numeric()
-                    ->alignRight(),
+                    ->alignCenter(),
                 Tables\Columns\TextColumn::make('total')
                     ->numeric(2)
                     ->alignRight(),
@@ -75,42 +89,65 @@ class OrderResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
-                    // Action::make('Add Item')
-                    //     ->icon('heroicon-o-plus')
-                    //     ->slideOver()
-                    //     ->form([
-                    //         Group::make()
-                    //             ->schema(
-                    //                 [
-                    //                     // Select::make('waste_id')
-                    //                     //     ->relationship('waste', 'type')
-                    //                     //     ->createOptionForm(Waste::getForm())
-                    //                     //     ->editOptionForm(Waste::getForm())
-                    //                     //     ->preload()
-                    //                     //     ->searchable()
-                    //                     //     ->live()
-                    //                     //     ->required(),
-                    //                     TextInput::make('origin')
-                    //                         ->maxLength(255),
-                    //                     TextInput::make('source')
-                    //                         ->maxLength(255),
-                    //                     Group::make()
-                    //                         ->columns(2)
-                    //                         ->schema([
-                    //                             TextInput::make('weight')
-                    //                                 ->required()
-                    //                                 ->numeric(),
-                    //                             Select::make('price_id')
-                    //                                 ->relationship('price', 'price')
-                    //                                 // ->disabled()
-                    //                                 ->required(),
-                    //                         ]),
-                    //                 ]
-                    //                 // OrderItem::getForm()
-                    //             )
-                    //     ]),
+                    Action::make('Add Item')
+                        ->icon('heroicon-o-plus')
+                        ->slideOver()
+                        ->form([
+                            Repeater::make('items')
+                                ->collapsible()
+                                ->columns(3)
+                                ->schema([
+                                    Select::make('waste_id')
+                                        ->label('Waste Type')
+                                        ->options(Waste::whereHas('prices')->pluck('type', 'id')->toArray())
+                                        ->preload()
+                                        ->searchable()
+                                        ->live()
+                                        ->afterStateUpdated(function (Set $set, Get $get) {
+                                            $set('price', Price::where('waste_id', $get('waste_id'))->latest()->first()->price);
+                                            $set('price_id', Price::where('waste_id', $get('waste_id'))->latest()->first()->id);
+                                        })
+                                        ->columnSpanFull()
+                                        ->required(),
+                                    TextInput::make('origin')
+                                        ->maxLength(255)
+                                        ->columnSpanFull(),
+                                    TextInput::make('source')
+                                        ->maxLength(255)
+                                        ->columnSpanFull(),
+                                    TextInput::make('weight')
+                                        ->type('number')
+                                        ->live(onBlur: true)
+                                        ->afterStateUpdated(function (Set $set, Get $get) {
+                                            if ($get('weight') && $get('waste_id')) {
+                                                $set('total', $get('weight') * Price::where('waste_id', $get('waste_id'))->first()->price);
+                                            }
+                                        })
+                                        ->required(),
+                                    TextInput::make('price')
+                                        ->numeric()
+
+                                        ->prefix('GHS')
+                                        // ->inputMode('decimal')
+                                        ->disabled(),
+
+                                    Hidden::make('price_id'),
+
+                                    TextInput::make('total')
+                                        ->numeric()
+                                        ->mask(RawJs::make('$money($input)'))
+                                        // ->stripCharacters(',')
+                                        ->prefix('GHS')
+                                        ->disabled(),
+                                ])
+                                ->itemLabel(function (array $state): ?string {
+                                    return Waste::find($state['waste_id'])->type ?? null;
+                                }),
+
+                        ]),
                     Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make()->slideOver(),
+                    Tables\Actions\EditAction::make()
+                        ->slideOver(),
                 ])
             ])
             ->bulkActions([
@@ -146,7 +183,8 @@ class OrderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            ItemsRelationManager::class
+            ItemsRelationManager::class,
+            PaymentsRelationManager::class,
         ];
     }
 

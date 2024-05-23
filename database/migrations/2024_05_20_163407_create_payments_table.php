@@ -12,10 +12,10 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->decimal('amount', 10, 2);
-            $table->date('date');
+            $table->date('date')->default(now());
             $table->string('payment_method', 100);
             $table->string('phone', 15);
-            $table->string('transactionId', 15);
+            $table->string('transaction_id', 15);
             $table->string('comments')->nullable();
             $table->foreignId('order_id');
             $table->timestamps();

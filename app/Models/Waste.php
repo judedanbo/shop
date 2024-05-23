@@ -32,6 +32,11 @@ class Waste extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function getCurrentPriceAttribute()
+    {
+        return $this->prices->first()->price ?? 'not set';
+    }
+
     public static function getForm(): array
     {
         return [

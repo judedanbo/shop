@@ -34,12 +34,15 @@ class Price extends Model
         return $this->belongsTo(Waste::class);
     }
 
-    public static function getForm(): array
+    public static function getForm($wasteId = null): array
     {
         return [
             Section::make('Waste Information')
 
-                ->aside()
+                // ->aside()
+                ->hidden(function () use ($wasteId) {
+                    return $wasteId !== null;
+                })
                 ->schema([
                     Select::make('waste_id')
                         ->relationship('waste', 'type')
@@ -47,6 +50,9 @@ class Price extends Model
                         ->createOptionForm(Waste::getForm())
                         ->preload()
                         ->searchable()
+                        ->hidden(function () use ($wasteId) {
+                            return $wasteId !== null;
+                        })
                         ->required(),
                 ]),
             Section::make('Price Information')
@@ -63,7 +69,7 @@ class Price extends Model
                         ->default(WasteUnitEnum::POUND),
                     TextInput::make('price')
                         ->required()
-                        ->maxLength(255)
+                        ->minValue(0.01)
                         ->suffix('GHS'),
                 ]),
         ];

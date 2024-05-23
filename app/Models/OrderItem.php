@@ -116,11 +116,13 @@ class OrderItem extends Model
                             }
                             // $set('total_price', ($get('weight') * Price::find($get('price_id'))->price) ?? null);
                         })
+                        ->minValue(0.01)
                         ->required(),
                     TextInput::make('price')
                         ->numeric()
                         ->prefix('GHS')
                         ->inputMode('decimal')
+                        ->minValue(0.01)
                         ->disabled(),
 
                     Hidden::make('price_id'),

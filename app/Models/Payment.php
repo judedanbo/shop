@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentTypesEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -20,7 +21,7 @@ class Payment extends Model
         'date',
         'payment_method',
         'phone',
-        'transactionId',
+        'transaction_id',
         'comments',
         'order_id',
     ];
@@ -36,28 +37,34 @@ class Payment extends Model
         return $this->belongsTo(Order::class);
     }
 
-    public static function getForm(): array
+    public static function getForm($orderID = null, $amount = null): array
     {
         return [
             Select::make('order_id')
                 ->relationship('order', 'id')
                 ->native(false)
+                ->hidden(function () use ($orderID) {
+                    return $orderID !== null;
+                })
                 ->required(),
             DatePicker::make('date')
                 ->native(false)
+                ->default(now())
                 ->required(),
             TextInput::make('amount')
                 ->required()
+                ->default($amount)
+                ->minValue(0.01)
+                ->maxValue($amount ?? 10000)
                 ->numeric(),
 
-            TextInput::make('payment_method')
-                ->required()
-                ->maxLength(100),
+            Select::make('payment_method')
+                ->options(PaymentTypesEnum::class),
             TextInput::make('phone')
                 ->tel()
                 ->required()
                 ->maxLength(15),
-            TextInput::make('transactionId')
+            TextInput::make('transaction_id')
                 ->required()
                 ->maxLength(15),
             Textarea::make('comments')

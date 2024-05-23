@@ -18,7 +18,7 @@ class PaymentFactory extends Factory
             'date' => $this->faker->date(),
             'payment_method' => $this->faker->regexify('[A-Za-z0-9]{100}'),
             'phone' => $this->faker->phoneNumber(),
-            'transactionId' => $this->faker->regexify('[A-Za-z0-9]{15}'),
+            'transaction_id' => $this->faker->regexify('[A-Za-z0-9]{15}'),
             'comments' => $this->faker->word(),
             'order_id' => Order::factory(),
         ];

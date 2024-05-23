@@ -34,7 +34,9 @@ class WasteResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('description')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('prices.price')
+                Tables\Columns\TextColumn::make('current_price')
+                    ->money('GHS')
+                    ->alignRight()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

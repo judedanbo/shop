@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OrderResource\RelationManagers;
 
+use App\Enums\OrderStatusEnum;
 use App\Models\OrderItem;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -15,7 +16,11 @@ class ItemsRelationManager extends RelationManager
 {
     protected static string $relationship = 'items';
 
-
+    function isReadOnly(): bool
+    {
+        return $this->getOwnerRecord()->status == OrderStatusEnum::Pending ? false : true;
+        // return false;
+    }
 
     public function form(Form $form): Form
     {
@@ -56,7 +61,10 @@ class ItemsRelationManager extends RelationManager
                 Tables\Filters\TrashedFilter::make()
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->after(function (RelationManager $livewire) {
+                        $livewire->dispatch('refreshOrders');
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

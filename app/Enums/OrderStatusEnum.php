@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+use Filament\Support\Colors\Color;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasDescription;
 use Filament\Support\Contracts\HasLabel;
@@ -33,13 +34,13 @@ enum OrderStatusEnum: string implements HasLabel, HasColor, HasDescription
     };
   }
 
-  public function getColor(): string
+  public function getColor(): string | array | null
   {
     return match ($this) {
-      self::Pending => 'yellow',
-      self::Processing => 'blue',
-      self::Completed => 'green',
-      self::Cancelled => 'red',
+      self::Pending => Color::Yellow,
+      self::Processing => Color::Blue,
+      self::Completed => Color::Green,
+      self::Cancelled => Color::Red,
     };
   }
 }

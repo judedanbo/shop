@@ -39,7 +39,7 @@ class PaymentResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('transactionId')
+                Tables\Columns\TextColumn::make('transaction_id')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('comments')
                     ->searchable(),

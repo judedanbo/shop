@@ -23,7 +23,7 @@ class PricesRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form
-            ->schema(Price::getForm());
+            ->schema(Price::getForm($wasteId = $this->getOwnerRecord()->id));
     }
 
     public function table(Table $table): Table
